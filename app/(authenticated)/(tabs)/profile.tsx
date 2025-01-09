@@ -70,7 +70,14 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleSignOut = () => signOut();
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      router.replace("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
+  };
 
   if (loading) {
     return (
@@ -142,7 +149,7 @@ export default function ProfileScreen() {
                     label="Weight"
                     value={
                       selectedDog.weight_lbs
-                        ? `${selectedDog.weight_lbs} kg`
+                        ? `${selectedDog.weight_lbs} lbs`
                         : "Not specified"
                     }
                   />
