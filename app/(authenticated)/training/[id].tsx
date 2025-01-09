@@ -213,7 +213,6 @@ export default function TrainingDetailsScreen() {
                   >
                     Delete
                   </Text>
-                  <IconSymbol name="trash" size={24} color="#ff3b30" />
                 </TouchableOpacity>
               )}
             </View>

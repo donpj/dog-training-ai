@@ -27,21 +27,6 @@ function formatDate(dateOfBirth: string | null | undefined): string {
   return `${day}-${month}-${year}`;
 }
 
-function calculateAge(dateOfBirth: string | undefined): string {
-  if (!dateOfBirth) return "Age unknown";
-
-  const birthDate = new Date(dateOfBirth);
-  const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const m = today.getMonth() - birthDate.getMonth();
-
-  if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-
-  return `${age} years old`;
-}
-
 export default function ProfileScreen() {
   // Theme and UI hooks
   const colorScheme = useColorScheme();
@@ -85,14 +70,7 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      router.replace("/auth/sign-in");
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
+  const handleSignOut = () => signOut();
 
   if (loading) {
     return (
@@ -164,7 +142,7 @@ export default function ProfileScreen() {
                     label="Weight"
                     value={
                       selectedDog.weight_lbs
-                        ? `${selectedDog.weight_lbs} lbs`
+                        ? `${selectedDog.weight_lbs} kg`
                         : "Not specified"
                     }
                   />
