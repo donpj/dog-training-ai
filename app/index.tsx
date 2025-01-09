@@ -3,7 +3,11 @@ import { Text, View, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import * as WebBrowser from "expo-web-browser";
-import { BottomSheetModal, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
+import {
+  BottomSheetModal,
+  BottomSheetModalProvider,
+  BottomSheetBackdrop,
+} from "@gorhom/bottom-sheet";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { ModalType } from "@/types/enums";
 import AuthModal from "@/components/auth/AuthModal";
@@ -43,10 +47,10 @@ export default function Index() {
     );
   };
 
-  const showModal = useCallback((type: ModalType) => {
+  const showModal = async (type: ModalType) => {
     setAuthType(type);
     bottomSheetModalRef.current?.present();
-  }, []);
+  };
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -62,59 +66,60 @@ export default function Index() {
   );
 
   return (
-    <View style={[styles.container, { paddingTop: top + 30 }]}>
-      <View style={styles.imageContainer}>
+    <BottomSheetModalProvider>
+      <View style={[styles.container, { paddingTop: top + 30 }]}>
         <Image
           source={require("@/assets/images/login/trello.png")}
-          style={styles.imageStyle}
+          style={styles.image}
+          resizeMode="contain"
         />
-      </View>
-      <Text style={styles.introText}>The Future of Dog Training</Text>
-      <View style={styles.bottomContainer}>
-        <TouchableOpacity
-          style={[styles.btn, { backgroundColor: "white" }]}
-          onPress={() => showModal(ModalType.Login)}
-        >
-          <Text style={[styles.btnText, { color: Colors.primary }]}>
-            Log in
+        <Text style={styles.introText}>The Future of Dog Training</Text>
+        <View style={styles.bottomContainer}>
+          <TouchableOpacity
+            style={[styles.btn, { backgroundColor: "white" }]}
+            onPress={() => showModal(ModalType.Login)}
+          >
+            <Text style={[styles.btnText, { color: Colors.primary }]}>
+              Log in
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.btn]}
+            onPress={() => showModal(ModalType.SignUp)}
+          >
+            <Text style={[styles.btnText, { color: "#fff" }]}>Sign Up</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.description}>
+            By signing up, you agree to the{" "}
+            <Text style={styles.link} onPress={openLink}>
+              User Notice
+            </Text>{" "}
+            and{" "}
+            <Text style={styles.link} onPress={openLink}>
+              Privacy Policy
+            </Text>
+            .
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.btn]}
-          onPress={() => showModal(ModalType.SignUp)}
-        >
-          <Text style={[styles.btnText, { color: "#fff" }]}>Sign Up</Text>
-        </TouchableOpacity>
 
-        <Text style={styles.description}>
-          By signing up, you agree to the{" "}
-          <Text style={styles.link} onPress={openLink}>
-            User Notice
-          </Text>{" "}
-          and{" "}
-          <Text style={styles.link} onPress={openLink}>
-            Privacy Policy
+          <Text style={styles.link} onPress={openActionSheet}>
+            Can't log in or sign up?
           </Text>
-          .
-        </Text>
+        </View>
 
-        <Text style={styles.link} onPress={openActionSheet}>
-          Can't log in or sign up?
-        </Text>
+        <BottomSheetModal
+          ref={bottomSheetModalRef}
+          index={0}
+          snapPoints={snapPoints}
+          handleComponent={null}
+          backdropComponent={renderBackdrop}
+          enableOverDrag={false}
+          enablePanDownToClose
+        >
+          <AuthModal authType={authType} />
+        </BottomSheetModal>
       </View>
-
-      <BottomSheetModal
-        ref={bottomSheetModalRef}
-        index={0}
-        snapPoints={snapPoints}
-        handleComponent={null}
-        backdropComponent={renderBackdrop}
-        enableOverDrag={false}
-        enablePanDownToClose
-      >
-        <AuthModal authType={authType} />
-      </BottomSheetModal>
-    </View>
+    </BottomSheetModalProvider>
   );
 }
 
@@ -124,26 +129,19 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     alignItems: "center",
   },
-  imageContainer: {
-    height: 300,
-    width: 300,
-    alignSelf: "center",
-    backgroundColor: "white",
-    borderRadius: 10,
-    overflow: "hidden",
+  image: {
+    height: 380,
+    paddingHorizontal: 40,
+    resizeMode: "contain",
     marginTop: 50,
-    marginBottom: 20,
-  },
-  imageStyle: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
+    marginBottom: -5,
   },
   introText: {
     fontWeight: "600",
     color: "white",
-    fontSize: 17,
+    fontSize: 22,
     padding: 30,
+    marginBottom: 20,
   },
   bottomContainer: {
     width: "100%",

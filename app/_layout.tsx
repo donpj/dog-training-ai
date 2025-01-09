@@ -4,26 +4,34 @@ import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
 import * as SecureStore from "expo-secure-store";
-import { useEffect } from "react";
-import { View } from "react-native";
+import { useEffect, useState } from "react";
+import { View, Text } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { KeyboardProvider } from "react-native-keyboard-controller";
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
-const CLERK_PUBLISHABLE_KEY = process.env
-  .EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY as string;
+// Wrap the key check in a try-catch
+let CLERK_PUBLISHABLE_KEY: string;
+try {
+  CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
+} catch (error) {
+  console.error("Error accessing environment variables:", error);
+  CLERK_PUBLISHABLE_KEY = "";
+}
 
 // Cache the Clerk JWT
 const tokenCache = {
   async getToken(key: string) {
     try {
-      return SecureStore.getItemAsync(key);
+      const token = await SecureStore.getItemAsync(key);
+      return token;
     } catch (err) {
+      await SecureStore.deleteItemAsync(key);
       return null;
     }
   },
   async saveToken(key: string, value: string) {
     try {
+      await SecureStore.deleteItemAsync(key);
       return SecureStore.setItemAsync(key, value);
     } catch (err) {
       return;
@@ -46,42 +54,66 @@ const InitialLayout = () => {
     } else if (!isSignedIn) {
       router.replace("/");
     }
-  }, [isSignedIn]);
+  }, [isLoaded, isSignedIn]);
 
   if (!isLoaded) {
     return (
       <View
-        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-      ></View>
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#fff",
+        }}
+      >
+        <Text>Loading...</Text>
+      </View>
     );
   }
 
   return (
-    <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="(authenticated)" options={{ headerShown: false }} />
-      <Stack.Screen name="auth" options={{ headerShown: false }} />
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+      <Stack.Screen name="(authenticated)" />
+      <Stack.Screen name="auth" />
     </Stack>
   );
 };
 
 const RootLayoutNav = () => {
+  if (!CLERK_PUBLISHABLE_KEY) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#fff",
+        }}
+      >
+        <Text>Configuration Error</Text>
+        <Text>Please check environment setup</Text>
+      </View>
+    );
+  }
+
   return (
     <ClerkProvider
-      publishableKey={CLERK_PUBLISHABLE_KEY!}
+      publishableKey={CLERK_PUBLISHABLE_KEY}
       tokenCache={tokenCache}
+      appearance={{
+        baseTheme: undefined,
+      }}
     >
       <ActionSheetProvider>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <KeyboardProvider>
-            <SafeAreaProvider>
-              <BottomSheetModalProvider>
-                <StatusBar style="light" />
-                <InitialLayout />
-              </BottomSheetModalProvider>
-            </SafeAreaProvider>
-          </KeyboardProvider>
-        </GestureHandlerRootView>
+        <SafeAreaProvider>
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <KeyboardProvider>
+              <StatusBar style="light" />
+              <InitialLayout />
+            </KeyboardProvider>
+          </GestureHandlerRootView>
+        </SafeAreaProvider>
       </ActionSheetProvider>
     </ClerkProvider>
   );
