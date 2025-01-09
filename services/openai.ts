@@ -279,33 +279,47 @@ function getRecentAchievements(sessions: TrainingSession[]) {
 export async function generateTrainingPlan({
   dogName,
   breed,
-  age,
+  date_of_birth,
   goal,
   difficulty,
   durationWeeks,
+  sessionsPerWeek,
   behaviorToCorrect,
 }: {
   dogName: string;
   breed?: string;
-  age: number;
+  date_of_birth?: string;
   goal: string;
   difficulty: DifficultyLevel;
   durationWeeks: number;
+  sessionsPerWeek: number;
   behaviorToCorrect?: string;
 }) {
   console.log("\n=== GENERATING TRAINING PLAN ===");
-  console.log("Dog:", { dogName, breed, age });
+  console.log("Dog:", { dogName, breed, date_of_birth });
+
+  // Calculate age from date_of_birth
+  const age = date_of_birth
+    ? Math.floor(
+      (new Date().getTime() - new Date(date_of_birth).getTime()) /
+        (1000 * 60 * 60 * 24 * 365),
+    )
+    : undefined;
+
   console.log("Training parameters:", {
     goal,
     difficulty,
     durationWeeks,
+    sessionsPerWeek,
     behaviorToCorrect,
   });
 
   const prompt =
     `Create a ${durationWeeks}-week ${difficulty} level dog training plan for ${dogName}${
       breed ? ` (${breed})` : ""
-    }, age ${age} years.
+    }${
+      age ? `, age ${age} years` : ""
+    }, with ${sessionsPerWeek} training sessions per week.
 ${
       behaviorToCorrect
         ? `Primary focus: Correcting the following behavior issue: ${behaviorToCorrect}
@@ -330,11 +344,13 @@ ${
 Include in your response:
 1. A title for the training program
 2. A brief description of what will be achieved
-3. A list of daily training steps, where each step includes:
+3. A list of exactly ${
+      sessionsPerWeek * durationWeeks
+    } training steps (${sessionsPerWeek} sessions per week for ${durationWeeks} weeks). Each step should include:
    - Title of the exercise
    - Detailed description of how to perform it
    - Estimated duration in minutes
-   - Day number in the program
+   - Day number in the program (spread evenly across the ${durationWeeks} weeks)
    ${
       behaviorToCorrect
         ? "- How this exercise helps with behavior correction (when applicable)"
@@ -384,13 +400,25 @@ Format the response as a JSON object with this structure:
 export async function suggestTrainingTip(dogProfile: {
   name: string;
   breed?: string;
-  age: number;
+  date_of_birth?: string;
 }): Promise<string> {
   console.log("Generating training tip for:", dogProfile);
 
+  // Calculate age from date_of_birth
+  const age = dogProfile.date_of_birth
+    ? Math.floor(
+      (new Date().getTime() - new Date(dogProfile.date_of_birth).getTime()) /
+        (1000 * 60 * 60 * 24 * 365),
+    )
+    : undefined;
+
   const prompt = `Provide a short, practical training tip for ${dogProfile.name}
-${dogProfile.breed ? `(${dogProfile.breed})` : ""}, age ${dogProfile.age} years.
-Focus on positive reinforcement and make it specific to the dog's age and breed characteristics.`;
+${dogProfile.breed ? `(${dogProfile.breed})` : ""}${
+    age ? `, age ${age} years` : ""
+  }.
+Focus on positive reinforcement${
+    age ? ` and make it specific to the dog's age` : ""
+  }${dogProfile.breed ? ` and breed characteristics` : ""}.`;
 
   try {
     const completion = await openai.chat.completions.create({

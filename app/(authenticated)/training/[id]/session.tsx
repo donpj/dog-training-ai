@@ -650,6 +650,7 @@ export default function TrainingSessionScreen() {
         options={{
           headerShown: true,
           title: "Training Session",
+          headerTintColor: "000",
           headerLeft: () => (
             <TouchableOpacity
               onPress={() => router.back()}

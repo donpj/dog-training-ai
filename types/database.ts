@@ -21,16 +21,21 @@ export interface Dog {
 
 export interface TrainingPlan {
   id: number;
-  dog_id: number;
+  created_at: string;
+  updated_at: string;
   user_id: string;
+  dog_id: number;
   title: string;
-  description?: string;
+  description: string;
   behavior_to_correct?: string;
-  difficulty: string;
+  difficulty: DifficultyLevel;
   duration_weeks: number;
-  status: string;
-  created_at?: string;
-  updated_at?: string;
+  sessions_per_week: number;
+  training_days: string[];
+  status: TrainingStatus;
+  progress_percentage?: number;
+  average_rating?: number;
+  total_sessions?: number;
 }
 
 export interface TrainingStep {

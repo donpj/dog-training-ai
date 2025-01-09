@@ -164,7 +164,7 @@ export default function ProfileScreen() {
                     label="Weight"
                     value={
                       selectedDog.weight_lbs
-                        ? `${selectedDog.weight_lbs} kg`
+                        ? `${selectedDog.weight_lbs} lbs`
                         : "Not specified"
                     }
                   />
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 16,
+    flex: 1,
   },
   dogSelector: {
     flexDirection: "row",
@@ -355,7 +355,6 @@ const styles = StyleSheet.create({
   },
   labelRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 16,
   },

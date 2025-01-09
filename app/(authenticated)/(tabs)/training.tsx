@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useColorScheme } from "react-native";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useUser } from "@clerk/clerk-expo";
 import { getTrainingPlans } from "@/services/database";
 import {
@@ -35,11 +35,13 @@ export default function TrainingScreen() {
   const [plans, setPlans] = useState<TrainingPlanWithDog[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (isLoaded && user) {
-      loadPlans();
-    }
-  }, [isLoaded, user]);
+  useFocusEffect(
+    useCallback(() => {
+      if (isLoaded && user) {
+        loadPlans();
+      }
+    }, [isLoaded, user])
+  );
 
   const loadPlans = async () => {
     try {

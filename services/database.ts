@@ -598,7 +598,7 @@ export async function getTrainingDataForAI(userId: string) {
         dog:dogs (
           name,
           breed,
-          age_years,
+          date_of_birth,
           weight_lbs
         ),
         steps:training_steps (

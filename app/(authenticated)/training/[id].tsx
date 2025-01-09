@@ -186,21 +186,37 @@ export default function TrainingDetailsScreen() {
       ) : plan ? (
         <>
           <View style={styles.header}>
-            <TouchableOpacity
-              style={styles.backButton}
-              onPress={() => router.back()}
-            >
-              <IconSymbol name="chevron.left" size={24} color={tintColor} />
-              <Text style={[styles.backText, { color: tintColor }]}>Back</Text>
-            </TouchableOpacity>
-            {isOwner && (
+            <View style={styles.headerLeft}>
               <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={handleDelete}
+                style={styles.backButton}
+                onPress={() => router.back()}
               >
-                <IconSymbol name="trash" size={24} color="red" />
+                <IconSymbol name="chevron.left" size={24} color={tintColor} />
+                <Text style={[styles.backText, { color: tintColor }]}>
+                  Back
+                </Text>
               </TouchableOpacity>
-            )}
+            </View>
+            <View style={styles.headerCenter}>
+              <Text style={styles.headerTitleText} numberOfLines={1}>
+                Training Plan
+              </Text>
+            </View>
+            <View style={styles.headerRight}>
+              {isOwner && (
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={handleDelete}
+                >
+                  <Text
+                    style={{ color: "#ff3b30", marginRight: 8, fontSize: 17 }}
+                  >
+                    Delete
+                  </Text>
+                  <IconSymbol name="trash" size={24} color="#ff3b30" />
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
           <ScrollView
             style={styles.content}
@@ -339,20 +355,36 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    alignItems: "center",
+    padding: 16,
+    backgroundColor: "#fff",
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#ccc",
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  headerCenter: {
+    flex: 2,
+    alignItems: "center",
+  },
+  headerRight: {
+    flex: 1,
+    alignItems: "flex-end",
   },
   backButton: {
     flexDirection: "row",
     alignItems: "center",
   },
   backText: {
-    fontSize: 16,
-    marginLeft: 4,
+    fontSize: 17,
+    fontWeight: "600",
+  },
+  headerTitleText: {
+    fontSize: 17,
+    fontWeight: "600",
+    textAlign: "center",
   },
   content: {
     flex: 1,
@@ -483,6 +515,8 @@ const styles = StyleSheet.create({
     marginTop: 24,
   },
   deleteButton: {
+    flexDirection: "row",
+    alignItems: "center",
     padding: 8,
   },
 });

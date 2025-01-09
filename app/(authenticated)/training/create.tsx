@@ -43,6 +43,8 @@ export default function CreatePlanScreen() {
     behaviorToCorrect: "",
     difficulty: "beginner" as DifficultyLevel,
     durationWeeks: "4",
+    sessionsPerWeek: "3",
+    daysPerWeek: ["Monday", "Wednesday", "Friday"] as string[],
   });
 
   useEffect(() => {
@@ -93,16 +95,11 @@ export default function CreatePlanScreen() {
         const aiPlan = await generateTrainingPlan({
           dogName: selectedDog.name,
           breed: selectedDog.breed || undefined,
-          age: selectedDog.date_of_birth
-            ? Math.floor(
-                (new Date().getTime() -
-                  new Date(selectedDog.date_of_birth).getTime()) /
-                  (1000 * 60 * 60 * 24 * 365)
-              )
-            : 0,
+          date_of_birth: selectedDog.date_of_birth || undefined,
           goal: formData.goal,
           difficulty: formData.difficulty,
           durationWeeks: parseInt(formData.durationWeeks, 10),
+          sessionsPerWeek: parseInt(formData.sessionsPerWeek, 10),
           behaviorToCorrect: formData.behaviorToCorrect,
         });
 
@@ -114,6 +111,8 @@ export default function CreatePlanScreen() {
           behavior_to_correct: formData.behaviorToCorrect,
           difficulty: formData.difficulty,
           duration_weeks: parseInt(formData.durationWeeks, 10),
+          sessions_per_week: parseInt(formData.sessionsPerWeek, 10),
+          training_days: formData.daysPerWeek,
           status: "not_started",
           steps: aiPlan.steps.map((step: AIStep) => ({
             title: step.title,
@@ -283,7 +282,7 @@ export default function CreatePlanScreen() {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Duration (weeks)</Text>
+            <Text style={styles.label}>Duration</Text>
             <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={formData.durationWeeks}
@@ -295,6 +294,44 @@ export default function CreatePlanScreen() {
                 <Picker.Item label="4 weeks" value="4" />
                 <Picker.Item label="6 weeks" value="6" />
                 <Picker.Item label="8 weeks" value="8" />
+              </Picker>
+            </View>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Days per Week</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={formData.daysPerWeek.length.toString()}
+                onValueChange={(value: string) => {
+                  const days = ["Monday", "Wednesday", "Friday"];
+                  if (value === "2") days.pop();
+                  if (value === "4") days.push("Thursday");
+                  if (value === "5") days.push("Thursday", "Tuesday");
+                  setFormData((prev) => ({ ...prev, daysPerWeek: days }));
+                }}
+              >
+                <Picker.Item label="2 days/week" value="2" />
+                <Picker.Item label="3 days/week" value="3" />
+                <Picker.Item label="4 days/week" value="4" />
+                <Picker.Item label="5 days/week" value="5" />
+              </Picker>
+            </View>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Sessions per Week</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={formData.sessionsPerWeek}
+                onValueChange={(value: string) =>
+                  setFormData((prev) => ({ ...prev, sessionsPerWeek: value }))
+                }
+              >
+                <Picker.Item label="2 sessions/week" value="2" />
+                <Picker.Item label="3 sessions/week" value="3" />
+                <Picker.Item label="4 sessions/week" value="4" />
+                <Picker.Item label="5 sessions/week" value="5" />
               </Picker>
             </View>
           </View>
@@ -424,5 +461,24 @@ const styles = StyleSheet.create({
     color: "#666",
     fontStyle: "italic",
     marginTop: 4,
+  },
+  daysContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 8,
+  },
+  dayButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    backgroundColor: "#f8f8f8",
+  },
+  dayButtonText: {
+    fontSize: 14,
+    color: "#666",
+    fontWeight: "600",
   },
 });
