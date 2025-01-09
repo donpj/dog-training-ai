@@ -50,6 +50,14 @@
     ],
     "developmentClient": {
       "debuggerHost": "localhost:8081"
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "bee637b8-69ae-4e7e-b40e-ebdd074757be"
+      }
     }
   }
 }

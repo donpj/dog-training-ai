@@ -1,9 +1,9 @@
 import { View } from "react-native";
-import { Slider as RNSlider } from "@miblanchard/react-native-slider";
+import Slider from "@react-native-community/slider";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
-interface SliderProps {
+interface CustomSliderProps {
   value: number;
   onValueChange: (value: number) => void;
   minimumValue: number;
@@ -11,21 +11,21 @@ interface SliderProps {
   step: number;
 }
 
-export function Slider({
+export function CustomSlider({
   value,
   onValueChange,
   minimumValue,
   maximumValue,
   step,
-}: SliderProps) {
+}: CustomSliderProps) {
   const colorScheme = useColorScheme();
   const tintColor = Colors[colorScheme ?? "light"].tint;
 
   return (
     <View style={{ paddingHorizontal: 8 }}>
-      <RNSlider
+      <Slider
         value={value}
-        onValueChange={(values) => onValueChange(values[0])}
+        onValueChange={onValueChange}
         minimumValue={minimumValue}
         maximumValue={maximumValue}
         step={step}

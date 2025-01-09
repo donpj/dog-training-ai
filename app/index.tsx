@@ -63,11 +63,13 @@ export default function Index() {
 
   return (
     <View style={[styles.container, { paddingTop: top + 30 }]}>
-      <Image
-        source={require("@/assets/images/login/trello.png")}
-        style={styles.image}
-      />
-      <Text style={styles.introText}>The Future of Independent Work</Text>
+      <View style={styles.imageContainer}>
+        <Image
+          source={require("@/assets/images/login/trello.png")}
+          style={styles.imageStyle}
+        />
+      </View>
+      <Text style={styles.introText}>The Future of Dog Training</Text>
       <View style={styles.bottomContainer}>
         <TouchableOpacity
           style={[styles.btn, { backgroundColor: "white" }]}
@@ -122,10 +124,20 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary,
     alignItems: "center",
   },
-  image: {
-    height: 450,
-    paddingHorizontal: 40,
-    resizeMode: "contain",
+  imageContainer: {
+    height: 300,
+    width: 300,
+    alignSelf: "center",
+    backgroundColor: "white",
+    borderRadius: 10,
+    overflow: "hidden",
+    marginTop: 50,
+    marginBottom: 20,
+  },
+  imageStyle: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
   introText: {
     fontWeight: "600",
