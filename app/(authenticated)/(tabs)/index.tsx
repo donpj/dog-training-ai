@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,7 @@ import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useUser } from "@clerk/clerk-expo";
 import { getTrainingPlans, getTrainingSteps } from "@/services/database";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import type {
   TrainingPlan as DBTrainingPlan,
   TrainingStatus,
@@ -44,11 +44,14 @@ export default function HomeScreen() {
     new Map()
   );
 
-  useEffect(() => {
-    if (isLoaded && user) {
-      loadTrainingData();
-    }
-  }, [isLoaded, user]);
+  useFocusEffect(
+    useCallback(() => {
+      if (isLoaded && user) {
+        console.log("Screen focused, reloading training data...");
+        loadTrainingData();
+      }
+    }, [isLoaded, user])
+  );
 
   const loadTrainingData = async () => {
     try {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -16,7 +16,7 @@ import { useBottomTabHeight } from "@/hooks/useBottomTabHeight";
 import { useUser, useAuth } from "@clerk/clerk-expo";
 import { getUserProfile } from "@/services/database";
 import { Dog } from "@/types/database";
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 
 function formatDate(dateOfBirth: string | null | undefined): string {
   if (!dateOfBirth) return "Not specified";
@@ -59,12 +59,15 @@ export default function ProfileScreen() {
   const [dogs, setDogs] = useState<Dog[]>([]);
   const [selectedDog, setSelectedDog] = useState<Dog | null>(null);
 
-  // Effect hooks
-  useEffect(() => {
-    if (isLoaded && user) {
-      loadProfile();
-    }
-  }, [isLoaded, user, refresh]);
+  // Replace useEffect with useFocusEffect
+  useFocusEffect(
+    useCallback(() => {
+      if (isLoaded && user) {
+        console.log("Profile screen focused, reloading data...");
+        loadProfile();
+      }
+    }, [isLoaded, user])
+  );
 
   const loadProfile = async () => {
     try {
@@ -161,7 +164,7 @@ export default function ProfileScreen() {
                     label="Weight"
                     value={
                       selectedDog.weight_lbs
-                        ? `${selectedDog.weight_lbs} lbs`
+                        ? `${selectedDog.weight_lbs} kg`
                         : "Not specified"
                     }
                   />

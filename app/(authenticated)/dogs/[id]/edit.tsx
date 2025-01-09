@@ -251,7 +251,7 @@ export default function EditDogScreen() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Weight (lbs)</Text>
+            <Text style={styles.label}>Weight (kg)</Text>
             <TextInput
               style={styles.input}
               value={weight}
