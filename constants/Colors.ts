@@ -24,4 +24,9 @@ export const Colors = {
     tabIconSelected: "#fff",
   },
   primary: "#6c47ff",
+  difficulty: {
+    beginner: "#4CAF50", // Green
+    intermediate: "#FF9800", // Orange
+    advanced: "#F44336", // Red
+  },
 };

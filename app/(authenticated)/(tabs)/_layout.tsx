@@ -1,12 +1,15 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { Platform } from "react-native";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 
 import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import FontAwesome from "@expo/vector-icons/build/FontAwesome";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -29,27 +32,27 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "Dashboard",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+            <MaterialIcons size={28} name="space-dashboard" color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="training"
         options={{
-          title: "Training",
+          title: "Plans",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="list.bullet" color={color} />
+            <FontAwesome5 name="dog" size={24} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
-          title: "Chat",
+          title: "AI Chat",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="message.fill" color={color} />
+            <MaterialIcons name="chat-bubble" size={24} color={color} />
           ),
         }}
       />
@@ -59,7 +62,7 @@ export default function TabLayout() {
           title: "Profile",
           headerShown: false,
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+            <FontAwesome size={28} name="user" color={color} />
           ),
         }}
       />

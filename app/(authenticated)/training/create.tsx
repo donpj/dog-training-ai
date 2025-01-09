@@ -92,8 +92,14 @@ export default function CreatePlanScreen() {
         // Generate plan using AI
         const aiPlan = await generateTrainingPlan({
           dogName: selectedDog.name,
-          breed: selectedDog.breed,
-          age: selectedDog.age_years || 0,
+          breed: selectedDog.breed || undefined,
+          age: selectedDog.date_of_birth
+            ? Math.floor(
+                (new Date().getTime() -
+                  new Date(selectedDog.date_of_birth).getTime()) /
+                  (1000 * 60 * 60 * 24 * 365)
+              )
+            : 0,
           goal: formData.goal,
           difficulty: formData.difficulty,
           durationWeeks: parseInt(formData.durationWeeks, 10),
@@ -214,8 +220,15 @@ export default function CreatePlanScreen() {
                     {dog.breed && (
                       <Text style={styles.dogBreed}>{dog.breed}</Text>
                     )}
-                    {dog.age_years && (
-                      <Text style={styles.dogAge}>{dog.age_years} years</Text>
+                    {dog.date_of_birth && (
+                      <Text style={styles.dogAge}>
+                        {Math.floor(
+                          (new Date().getTime() -
+                            new Date(dog.date_of_birth).getTime()) /
+                            (1000 * 60 * 60 * 24 * 365)
+                        )}{" "}
+                        years
+                      </Text>
                     )}
                   </TouchableOpacity>
                 ))}

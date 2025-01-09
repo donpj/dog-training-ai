@@ -14,8 +14,19 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { useUser } from "@clerk/clerk-expo";
 import { getTrainingPlans, getTrainingSteps } from "@/services/database";
 import { useRouter } from "expo-router";
-import type { TrainingPlan, TrainingStep } from "@/types/database";
+import type {
+  TrainingPlan as DBTrainingPlan,
+  TrainingStatus,
+  Dog,
+  TrainingStep,
+} from "@/types/database";
 import { useBottomTabHeight } from "@/hooks/useBottomTabHeight";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+
+type TrainingPlanWithDog = DBTrainingPlan & {
+  dog: Pick<Dog, "name">;
+};
 
 export default function HomeScreen() {
   const colorScheme = useColorScheme();
@@ -24,9 +35,11 @@ export default function HomeScreen() {
   const { user, isLoaded } = useUser();
   const tabHeight = useBottomTabHeight();
   const [loading, setLoading] = useState(true);
-  const [currentPlan, setCurrentPlan] = useState<TrainingPlan | null>(null);
+  const [currentPlan, setCurrentPlan] = useState<TrainingPlanWithDog | null>(
+    null
+  );
   const [steps, setSteps] = useState<TrainingStep[]>([]);
-  const [activePlans, setActivePlans] = useState<TrainingPlan[]>([]);
+  const [activePlans, setActivePlans] = useState<TrainingPlanWithDog[]>([]);
   const [stepsMap, setStepsMap] = useState<Map<string, TrainingStep[]>>(
     new Map()
   );
@@ -136,9 +149,34 @@ export default function HomeScreen() {
                           ? `Day ${currentStep.day_number}`
                           : "Complete!"}
                       </Text>
-                      <Text style={styles.dogName}>
-                        {(plan as any).dog?.name}
-                      </Text>
+                      <View style={styles.planMeta}>
+                        <Text style={styles.planDog}>{plan.dog.name}</Text>
+                        <View
+                          style={[
+                            styles.difficultyBadge,
+                            {
+                              backgroundColor:
+                                Colors.difficulty[
+                                  plan.difficulty as keyof typeof Colors.difficulty
+                                ] + "20",
+                            },
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.difficultyText,
+                              {
+                                color:
+                                  Colors.difficulty[
+                                    plan.difficulty as keyof typeof Colors.difficulty
+                                  ],
+                              },
+                            ]}
+                          >
+                            {plan.difficulty}
+                          </Text>
+                        </View>
+                      </View>
                     </View>
                     <View style={styles.progressBar}>
                       <View
@@ -181,19 +219,20 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.quickActions}>
             <QuickActionButton
-              icon="paperplane.fill"
-              label="Ask Trainer"
+              icon="chat-bubble"
+              iconType="material"
+              label="Ask AI Trainer"
               tintColor={tintColor}
               onPress={() => router.push("/(tabs)/chat")}
             />
             <QuickActionButton
-              icon="chevron.right"
+              icon="plus"
               label="New Plan"
               tintColor={tintColor}
               onPress={() => router.push("/training/create")}
             />
             <QuickActionButton
-              icon="house.fill"
+              icon="dog"
               label="My Plans"
               tintColor={tintColor}
               onPress={() => router.push("/(tabs)/training")}
@@ -204,7 +243,7 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Training Tips</Text>
           <View style={styles.tipCard}>
-            <IconSymbol size={24} name="house.fill" color={tintColor} />
+            <FontAwesome5 name="lightbulb" size={24} color={tintColor} />
             <View style={styles.tipContent}>
               <Text style={styles.tipTitle}>Consistency is Key</Text>
               <Text style={styles.tipText}>
@@ -224,18 +263,24 @@ function QuickActionButton({
   label,
   tintColor,
   onPress,
+  iconType = "fa5",
 }: {
-  icon: IconSymbolName;
+  icon: string;
   label: string;
   tintColor: string;
   onPress: () => void;
+  iconType?: "fa5" | "material";
 }) {
   return (
     <TouchableOpacity style={styles.quickActionButton} onPress={onPress}>
       <View
         style={[styles.iconContainer, { backgroundColor: tintColor + "20" }]}
       >
-        <IconSymbol size={24} name={icon} color={tintColor} />
+        {iconType === "material" ? (
+          <MaterialIcons name={icon as any} size={24} color={tintColor} />
+        ) : (
+          <FontAwesome5 name={icon} size={24} color={tintColor} />
+        )}
       </View>
       <Text style={styles.quickActionLabel}>{label}</Text>
     </TouchableOpacity>
@@ -358,5 +403,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
     marginTop: 4,
+  },
+  planMeta: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  planDog: {
+    fontSize: 14,
+    color: "#666",
+    marginRight: 8,
+  },
+  difficultyBadge: {
+    padding: 4,
+    borderRadius: 4,
+  },
+  difficultyText: {
+    fontSize: 12,
+    fontWeight: "600",
   },
 });

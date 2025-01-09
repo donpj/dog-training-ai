@@ -46,6 +46,7 @@ export default function TrainingDetailsScreen() {
   const [steps, setSteps] = useState<TrainingStep[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const isOwner = plan?.user_id === user?.id;
 
   useEffect(() => {
     if (isLoaded && user && id) {
@@ -167,128 +168,165 @@ export default function TrainingDetailsScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <IconSymbol size={24} name="chevron.left" color={tintColor} />
-          <Text style={[styles.backText, { color: tintColor }]}>Back</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.deleteButton}
-          onPress={handleDelete}
-          disabled={updating}
-        >
-          <IconSymbol
-            size={24}
-            name="trash.fill"
-            color={updating ? "#999" : "#FF3B30"}
-          />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.scrollContent}
-      >
-        <View style={styles.planHeader}>
-          <Text style={styles.planTitle}>{plan.title}</Text>
-          <View style={styles.planMeta}>
-            <Text style={styles.planDog}>{plan.dog.name}</Text>
-            <View
-              style={[
-                styles.difficultyBadge,
-                { backgroundColor: tintColor + "20" },
-              ]}
+    <SafeAreaView
+      style={[
+        styles.container,
+        { backgroundColor: Colors[colorScheme ?? "light"].background },
+      ]}
+    >
+      <Stack.Screen
+        options={{
+          headerShown: false,
+        }}
+      />
+      {loading ? (
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" color={tintColor} />
+        </View>
+      ) : plan ? (
+        <>
+          <View style={styles.header}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => router.back()}
             >
-              <Text style={[styles.difficultyText, { color: tintColor }]}>
-                {plan.difficulty}
+              <IconSymbol name="chevron.left" size={24} color={tintColor} />
+              <Text style={[styles.backText, { color: tintColor }]}>Back</Text>
+            </TouchableOpacity>
+            {isOwner && (
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={handleDelete}
+              >
+                <IconSymbol name="trash" size={24} color="red" />
+              </TouchableOpacity>
+            )}
+          </View>
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={styles.scrollContent}
+          >
+            <View style={styles.planHeader}>
+              <Text style={styles.planTitle}>{plan.title}</Text>
+              <View style={styles.planMeta}>
+                <Text style={styles.planDog}>{plan.dog.name}</Text>
+                <View
+                  style={[
+                    styles.difficultyBadge,
+                    {
+                      backgroundColor:
+                        Colors.difficulty[
+                          plan.difficulty as keyof typeof Colors.difficulty
+                        ] + "20",
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.difficultyText,
+                      {
+                        color:
+                          Colors.difficulty[
+                            plan.difficulty as keyof typeof Colors.difficulty
+                          ],
+                      },
+                    ]}
+                  >
+                    {plan.difficulty}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            <Text style={styles.description}>{plan.description}</Text>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Duration</Text>
+              <Text style={styles.sectionText}>
+                {plan.duration_weeks} weeks
               </Text>
             </View>
-          </View>
-        </View>
 
-        <Text style={styles.description}>{plan.description}</Text>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Status</Text>
+              <Text style={styles.sectionText}>{plan.status}</Text>
+            </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Duration</Text>
-          <Text style={styles.sectionText}>{plan.duration_weeks} weeks</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Status</Text>
-          <Text style={styles.sectionText}>{plan.status}</Text>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Training Steps</Text>
-          {steps.length > 0 ? (
-            steps.map((step, index) => (
-              <TouchableOpacity
-                key={step.id}
-                onPress={() =>
-                  router.push({
-                    pathname: "/training/[id]/session",
-                    params: {
-                      id: plan.id.toString(),
-                      stepIndex: index.toString(),
-                      timestamp: Date.now().toString(),
-                    },
-                  })
-                }
-                activeOpacity={0.7}
-              >
-                <View style={styles.stepCard}>
-                  <View style={styles.stepHeader}>
-                    <Text style={styles.stepTitle}>{step.title}</Text>
-                    <Text style={styles.stepDuration}>
-                      {step.duration_minutes} min
-                    </Text>
-                  </View>
-                  <Text style={styles.stepDescription}>{step.description}</Text>
-                  {step.completed && (
-                    <View style={styles.completedBadge}>
-                      <IconSymbol
-                        size={16}
-                        name="checkmark.circle.fill"
-                        color={tintColor}
-                      />
-                      <Text
-                        style={[styles.completedText, { color: tintColor }]}
-                      >
-                        Completed
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Training Steps</Text>
+              {steps.length > 0 ? (
+                steps.map((step, index) => (
+                  <TouchableOpacity
+                    key={step.id}
+                    onPress={() =>
+                      router.push({
+                        pathname: "/training/[id]/session",
+                        params: {
+                          id: plan.id.toString(),
+                          stepIndex: index.toString(),
+                          timestamp: Date.now().toString(),
+                        },
+                      })
+                    }
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.stepCard}>
+                      <View style={styles.stepHeader}>
+                        <Text style={styles.stepTitle}>{step.title}</Text>
+                        <Text style={styles.stepDuration}>
+                          {step.duration_minutes} min
+                        </Text>
+                      </View>
+                      <Text style={styles.stepDescription}>
+                        {step.description}
                       </Text>
+                      {step.completed && (
+                        <View style={styles.completedBadge}>
+                          <IconSymbol
+                            size={16}
+                            name="checkmark.circle.fill"
+                            color={tintColor}
+                          />
+                          <Text
+                            style={[styles.completedText, { color: tintColor }]}
+                          >
+                            Completed
+                          </Text>
+                        </View>
+                      )}
                     </View>
-                  )}
-                </View>
-              </TouchableOpacity>
-            ))
-          ) : (
-            <Text style={styles.emptyText}>No training steps available</Text>
-          )}
-        </View>
-      </ScrollView>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text style={styles.emptyText}>
+                  No training steps available
+                </Text>
+              )}
+            </View>
+          </ScrollView>
 
-      {(plan.status === "not_started" || plan.status === "in_progress") && (
-        <View style={styles.bottomContainer}>
-          {plan.status === "not_started" && (
-            <TouchableOpacity
-              style={[
-                styles.actionButton,
-                { backgroundColor: tintColor },
-                updating && styles.actionButtonDisabled,
-              ]}
-              onPress={handleStartTraining}
-              disabled={updating}
-            >
-              <Text style={styles.buttonText}>
-                {updating ? "Starting..." : "Start Training"}
-              </Text>
-            </TouchableOpacity>
+          {(plan.status === "not_started" || plan.status === "in_progress") && (
+            <View style={styles.bottomContainer}>
+              {plan.status === "not_started" && (
+                <TouchableOpacity
+                  style={[
+                    styles.actionButton,
+                    { backgroundColor: tintColor },
+                    updating && styles.actionButtonDisabled,
+                  ]}
+                  onPress={handleStartTraining}
+                  disabled={updating}
+                >
+                  <Text style={styles.buttonText}>
+                    {updating ? "Starting..." : "Start Training"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
           )}
-        </View>
+        </>
+      ) : (
+        <Text style={styles.errorText}>Training plan not found</Text>
       )}
     </SafeAreaView>
   );

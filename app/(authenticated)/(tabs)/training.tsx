@@ -123,10 +123,25 @@ export default function TrainingScreen() {
         <View
           style={[
             styles.difficultyBadge,
-            { backgroundColor: tintColor + "20" },
+            {
+              backgroundColor:
+                Colors.difficulty[
+                  plan.difficulty as keyof typeof Colors.difficulty
+                ] + "20",
+            },
           ]}
         >
-          <Text style={[styles.difficultyText, { color: tintColor }]}>
+          <Text
+            style={[
+              styles.difficultyText,
+              {
+                color:
+                  Colors.difficulty[
+                    plan.difficulty as keyof typeof Colors.difficulty
+                  ],
+              },
+            ]}
+          >
             {plan.difficulty}
           </Text>
         </View>
