@@ -12,11 +12,6 @@ const LOGIN_OPTIONS = [
     icon: require("@/assets/images/login/google.png"),
     strategy: AuthStrategy.Google,
   },
-  {
-    text: "Continue with Apple",
-    icon: require("@/assets/images/login/apple.png"),
-    strategy: AuthStrategy.Apple,
-  },
 ];
 
 interface AuthModalProps {
@@ -29,9 +24,7 @@ const AuthModal = ({ authType }: AuthModalProps) => {
   const { startOAuthFlow: googleAuth } = useOAuth({
     strategy: AuthStrategy.Google,
   });
-  const { startOAuthFlow: appleAuth } = useOAuth({
-    strategy: AuthStrategy.Apple,
-  });
+
   const { signUp, setActive } = useSignUp();
   const { signIn } = useSignIn();
 
@@ -53,7 +46,7 @@ const AuthModal = ({ authType }: AuthModalProps) => {
 
     const selectedAuth = {
       [AuthStrategy.Google]: googleAuth,
-      [AuthStrategy.Apple]: appleAuth,
+      //[AuthStrategy.Apple]: appleAuth,
     }[strategy];
 
     try {

@@ -73,7 +73,7 @@ export default function Index() {
           style={styles.image}
           resizeMode="contain"
         />
-        <Text style={styles.introText}>The Future of Dog Training</Text>
+        <Text style={styles.introText}>Your Personal AI Dog Trainer</Text>
         <View style={styles.bottomContainer}>
           <TouchableOpacity
             style={[styles.btn, { backgroundColor: "white" }]}

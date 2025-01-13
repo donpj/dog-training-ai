@@ -156,7 +156,9 @@ export async function generateChatResponse(
         dogs: trainingData.dogs.map((dog) => ({
           name: dog.name,
           breed: dog.breed,
-          age_years: dog.age_years,
+          weight: dog.weight_lbs ? `${dog.weight_lbs} kg` : "not specified",
+          date_of_birth: dog.date_of_birth,
+          age: formatDogAge(dog.date_of_birth, new Date().toISOString()),
           training_level: determineTrainingLevel(dog, trainingData.plans),
         })),
         active_plans: trainingData.plans
@@ -167,6 +169,9 @@ export async function generateChatResponse(
             progress: plan.progress_percentage,
             performance: analyzePerformance(plan),
           })),
+        recent_achievements: getRecentAchievements(
+          trainingData.recent_sessions || [],
+        ),
       };
       systemPrompt += `\n\nUser's Current Training Status:\n${
         JSON.stringify(
@@ -179,9 +184,9 @@ export async function generateChatResponse(
       model = "gpt-4-1106-preview";
       maxTokens = 300;
       // Add basic training info for training queries
-      systemPrompt += `\n\nDog: ${dog.name} (${
-        dog.breed || "Unknown breed"
-      }, ${dog.age} years)
+      systemPrompt += `\n\nDog: ${dog.name} (${dog.breed || "Unknown breed"}, ${
+        formatDogAge(dog.date_of_birth, new Date().toISOString())
+      }${dog.weight_lbs ? `, ${dog.weight_lbs} kg` : ""})
 Training Level: ${determineTrainingLevel(dog, trainingData.plans)}`;
     }
 
@@ -285,6 +290,7 @@ export async function generateTrainingPlan({
   durationWeeks,
   sessionsPerWeek,
   behaviorToCorrect,
+  weight_lbs,
 }: {
   dogName: string;
   breed?: string;
@@ -294,31 +300,20 @@ export async function generateTrainingPlan({
   durationWeeks: number;
   sessionsPerWeek: number;
   behaviorToCorrect?: string;
+  weight_lbs?: number;
 }) {
   console.log("\n=== GENERATING TRAINING PLAN ===");
-  console.log("Dog:", { dogName, breed, date_of_birth });
+  console.log("Dog:", { dogName, breed, date_of_birth, weight_lbs });
 
-  // Calculate age from date_of_birth
-  const age = date_of_birth
-    ? Math.floor(
-      (new Date().getTime() - new Date(date_of_birth).getTime()) /
-        (1000 * 60 * 60 * 24 * 365),
-    )
-    : undefined;
-
-  console.log("Training parameters:", {
-    goal,
-    difficulty,
-    durationWeeks,
-    sessionsPerWeek,
-    behaviorToCorrect,
-  });
+  const totalSessions = durationWeeks * sessionsPerWeek;
+  const currentDate = new Date().toISOString();
+  const formattedAge = formatDogAge(date_of_birth, currentDate);
 
   const prompt =
     `Create a ${durationWeeks}-week ${difficulty} level dog training plan for ${dogName}${
       breed ? ` (${breed})` : ""
-    }${
-      age ? `, age ${age} years` : ""
+    }${formattedAge ? `, ${formattedAge}` : ""}${
+      weight_lbs ? `, weighing ${weight_lbs} kg` : ""
     }, with ${sessionsPerWeek} training sessions per week.
 ${
       behaviorToCorrect
@@ -327,6 +322,8 @@ This behavior should be addressed through positive reinforcement techniques, whi
         : ""
     }
 Overall training goal: ${goal}
+
+IMPORTANT: Create EXACTLY ${totalSessions} training steps, numbered sequentially from 1 to ${totalSessions}.
 
 Please provide a structured plan that:
 ${
@@ -344,10 +341,8 @@ ${
 Include in your response:
 1. A title for the training program
 2. A brief description of what will be achieved
-3. A list of exactly ${
-      sessionsPerWeek * durationWeeks
-    } training steps (${sessionsPerWeek} sessions per week for ${durationWeeks} weeks). Each step should include:
-   - Title of the exercise
+3. A list of exactly ${totalSessions} training steps (${sessionsPerWeek} sessions per week for ${durationWeeks} weeks). Each step should include:
+   - Title of the exercise (starting with "Step N:", where N goes from 1 to ${totalSessions})
    - Detailed description of how to perform it
    - Estimated duration in minutes
    - Day number in the program (spread evenly across the ${durationWeeks} weeks)
@@ -363,7 +358,13 @@ Format the response as a JSON object with this structure:
   "description": "string",
   "steps": [
     {
-      "title": "string",
+      "title": "Step 1: [Exercise Name]",
+      "description": "string",
+      "dayNumber": number,
+      "durationMinutes": number
+    },
+    {
+      "title": "Step 2: [Exercise Name]",
       "description": "string",
       "dayNumber": number,
       "durationMinutes": number
@@ -373,9 +374,13 @@ Format the response as a JSON object with this structure:
 
   try {
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4-1106-preview",
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        {
+          role: "system",
+          content: SYSTEM_PROMPT +
+            "\n\nIMPORTANT: Create training steps in sequential order, numbered from 1 to the total number of sessions required.",
+        },
         { role: "user", content: prompt },
       ],
       temperature: 0.7,
@@ -387,10 +392,44 @@ Format the response as a JSON object with this structure:
       throw new Error("No response from OpenAI");
     }
 
-    console.log("Generated plan:", response);
+    let rawPlan;
+    try {
+      rawPlan = JSON.parse(response);
+    } catch (e) {
+      console.error("Failed to parse OpenAI response:", response);
+      throw new Error("Invalid JSON response from OpenAI");
+    }
+
+    // Validate and ensure sequential steps
+    if (
+      !rawPlan.steps || !Array.isArray(rawPlan.steps) ||
+      rawPlan.steps.length !== totalSessions
+    ) {
+      throw new Error(
+        `Invalid number of steps. Expected ${totalSessions}, got ${
+          rawPlan.steps?.length || 0
+        }`,
+      );
+    }
+
+    // Ensure steps are sequential and have correct day numbers
+    rawPlan.steps = rawPlan.steps.map((step: any, index: number) => {
+      const stepNumber = index + 1;
+      if (!step.title.startsWith(`Step ${stepNumber}:`)) {
+        step.title = `Step ${stepNumber}: ${
+          step.title.replace(/^Step \d+: /, "")
+        }`;
+      }
+      return {
+        ...step,
+        day_number: Math.ceil(stepNumber / sessionsPerWeek),
+      };
+    });
+
+    console.log("Generated plan:", rawPlan);
     console.log("=== PLAN GENERATION COMPLETE ===\n");
 
-    return JSON.parse(response);
+    return rawPlan;
   } catch (error) {
     console.error("Training plan generation error:", error);
     throw error;
@@ -415,9 +454,6 @@ export async function suggestTrainingTip(dogProfile: {
   const prompt = `Provide a short, practical training tip for ${dogProfile.name}
 ${dogProfile.breed ? `(${dogProfile.breed})` : ""}${
     age ? `, age ${age} years` : ""
-  }.
-Focus on positive reinforcement${
-    age ? ` and make it specific to the dog's age` : ""
   }${dogProfile.breed ? ` and breed characteristics` : ""}.`;
 
   try {
@@ -441,4 +477,44 @@ Focus on positive reinforcement${
     console.error("Training tip error:", error);
     throw error;
   }
+}
+
+function formatDogAge(dateOfBirth?: string, currentDate?: string): string {
+  if (!dateOfBirth) return "age not specified";
+
+  const birthDate = new Date(dateOfBirth);
+  const now = currentDate ? new Date(currentDate) : new Date();
+
+  // Ensure both dates are valid
+  if (isNaN(birthDate.getTime()) || isNaN(now.getTime())) {
+    return "age not specified";
+  }
+
+  const years = now.getFullYear() - birthDate.getFullYear();
+  let months = now.getMonth() - birthDate.getMonth();
+
+  // Adjust months if birth date hasn't occurred this year yet
+  if (now.getDate() < birthDate.getDate()) {
+    months--;
+  }
+
+  // Adjust years and months if months is negative
+  let adjustedYears = years;
+  let adjustedMonths = months;
+  if (months < 0) {
+    adjustedYears--;
+    adjustedMonths = months + 12;
+  }
+
+  // Handle future dates
+  if (adjustedYears < 0 || (adjustedYears === 0 && adjustedMonths < 0)) {
+    return "age not specified";
+  }
+
+  if (adjustedYears === 0) {
+    return `${adjustedMonths} months old`;
+  }
+  return adjustedMonths === 0
+    ? `${adjustedYears} years old`
+    : `${adjustedYears} years and ${adjustedMonths} months old`;
 }

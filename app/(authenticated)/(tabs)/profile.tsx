@@ -149,7 +149,7 @@ export default function ProfileScreen() {
                     label="Weight"
                     value={
                       selectedDog.weight_lbs
-                        ? `${selectedDog.weight_lbs} lbs`
+                        ? `${selectedDog.weight_lbs} kg`
                         : "Not specified"
                     }
                   />

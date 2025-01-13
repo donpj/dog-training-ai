@@ -299,27 +299,6 @@ export default function CreatePlanScreen() {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Days per Week</Text>
-            <View style={styles.pickerContainer}>
-              <Picker
-                selectedValue={formData.daysPerWeek.length.toString()}
-                onValueChange={(value: string) => {
-                  const days = ["Monday", "Wednesday", "Friday"];
-                  if (value === "2") days.pop();
-                  if (value === "4") days.push("Thursday");
-                  if (value === "5") days.push("Thursday", "Tuesday");
-                  setFormData((prev) => ({ ...prev, daysPerWeek: days }));
-                }}
-              >
-                <Picker.Item label="2 days/week" value="2" />
-                <Picker.Item label="3 days/week" value="3" />
-                <Picker.Item label="4 days/week" value="4" />
-                <Picker.Item label="5 days/week" value="5" />
-              </Picker>
-            </View>
-          </View>
-
-          <View style={styles.formGroup}>
             <Text style={styles.label}>Sessions per Week</Text>
             <View style={styles.pickerContainer}>
               <Picker
